@@ -1,0 +1,43 @@
+﻿@model WorkFlowBasic.Models.InventoryItem
+@{
+    ViewData["Title"] = "Eşya Ekle";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm" style="max-width: 600px; margin: 0 auto;">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Yeni Demirbaş Ekle</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label">Eşya Adı / Marka Model</label>
+                    <input asp-for="ItemName" class="form-control" placeholder="Örn: MacBook Air M2" />
+                    <span asp-validation-for="ItemName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Kategori</label>
+                    <select asp-for="Category" class="form-select">
+                        <option>Bilgisayar</option>
+                        <option>Telefon</option>
+                        <option>Tablet</option>
+                        <option>Araç</option>
+                        <option>Mobilya</option>
+                        <option>Diğer</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Seri Numarası</label>
+                    <input asp-for="SerialNumber" class="form-control" placeholder="Seri no..." />
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,54 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.WorkflowRequest>
+@{
+    ViewData["Title"] = "Reddedilen Talepler";
+}
+
+<h3><i class="bi bi-trash-fill text-danger"></i> Reddedilen Talepler Geçmişi</h3>
+<p class="text-muted">Burada reddettiğiniz talepleri görebilir, gerekirse geri alıp tekrar değerlendirebilirsiniz.</p>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-secondary">
+        Geçmişte reddettiğiniz herhangi bir talep bulunmuyor.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-danger">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Talep Eden</th>
+                        <th>Konu</th>
+                        <th>Red Tarihi</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Requester.FullName</strong><br />
+                                <small class="text-muted">@item.ProcessDefinition.ProcessName</small>
+                            </td>
+                            <td>@item.RequestTitle</td>
+                            <td>@item.CompletedDate?.ToString("g")</td>
+                            <td class="text-end">
+                                <form asp-action="Recover" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-outline-warning btn-sm" onclick="return confirm('Bu talebi geri alıp tekrar değerlendirmek istiyor musunuz?')">
+                                        <i class="bi bi-arrow-counterclockwise"></i> Geri Al / Kurtar
+                                    </button>
+                                </form>
+                                <a href="/Approvals/Details/@item.Id" class="btn btn-sm btn-light border">Detay</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

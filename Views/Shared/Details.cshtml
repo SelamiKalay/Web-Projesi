@@ -1,0 +1,54 @@
+﻿@model WorkFlowBasic.Models.WorkflowRequest
+@{
+    ViewData["Title"] = "Talep Detayı";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 text-primary">📄 Talep Detayı (#@Model.Id)</h5>
+            <a href="/Requests/MyRequests" class="btn btn-sm btn-outline-secondary">Listeye Dön</a>
+        </div>
+        <div class="card-body">
+            <dl class="row">
+                <dt class="col-sm-4">Konu:</dt>
+                <dd class="col-sm-8">@Model.RequestTitle</dd>
+                <dt class="col-sm-4">Süreç:</dt>
+                <dd class="col-sm-8">@Model.ProcessDefinition?.ProcessName</dd>
+                <dt class="col-sm-4">Durum:</dt>
+                <dd class="col-sm-8">
+                    @if (Model.Status == WorkFlowBasic.Models.RequestStatus.Pending)
+                    {
+                        <span class="badge bg-warning text-dark">Bekliyor</span>
+                    }
+                    else if (Model.Status == WorkFlowBasic.Models.RequestStatus.Approved)
+                    {
+
+                        <span class="badge bg-success">Onaylandı</span>
+                    }
+                    else
+                    {
+
+                        <span class="badge bg-danger">Reddedildi</span>
+                    }
+                </dd>
+                <dt class="col-sm-4">Açıklama:</dt>
+                <dd class="col-sm-8 bg-light p-2 rounded">@Model.Description</dd>
+            </dl>
+
+            <h6 class="mt-4 border-bottom pb-2">İşlem Geçmişi</h6>
+            <ul class="list-group list-group-flush">
+                @foreach (var log in Model.Logs.OrderByDescending(x => x.ActionDate))
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@log.Processor?.FullName</strong> <span class="text-muted small">(@log.Action)</span>
+                            <br /><small class="text-muted">Not: @log.Comments</small>
+                        </div>
+                        <span class="badge bg-light text-dark">@log.ActionDate.ToString("g")</span>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>

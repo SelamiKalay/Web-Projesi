@@ -1,0 +1,111 @@
+﻿@model WorkFlowBasic.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Personel İnceleme";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-gradient bg-info text-white py-3">
+            <h4 class="mb-0 d-flex align-items-center">
+                <i class="bi bi-person-lines-fill me-2"></i> Başvuru İnceleme: @Model.FirstName @Model.LastName
+            </h4>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="row g-4">
+
+                <div class="col-md-6">
+
+                    @if (ViewBag.History != null && ((List<WorkFlowBasic.Models.ApplicantHistory>)ViewBag.History).Any())
+                    {
+                        <div class="alert alert-danger mb-4 shadow-sm border-danger">
+                            <h5 class="alert-heading fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> DİKKAT: Önceki Başvurular</h5>
+                            <hr class="my-2">
+                            <ul class="mb-0 ps-3 small">
+                                @foreach (var hist in (List<WorkFlowBasic.Models.ApplicantHistory>)ViewBag.History)
+                                {
+                                    <li class="mb-2">
+                                        <strong>@hist.ActionDate.ToShortDateString():</strong> @hist.Result
+                                        <span class="text-muted">(@hist.ManagerName)</span><br />
+                                        <em>Not: "@hist.ManagerNote"</em>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <h5 class="text-secondary border-bottom pb-2 mb-3">
+                        <i class="bi bi-info-circle me-1"></i> Aday Bilgileri
+                    </h5>
+
+                    <dl class="row">
+                        <dt class="col-sm-4 text-muted">Ad:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.FirstName</dd>
+
+                        <dt class="col-sm-4 text-muted">Soyad:</dt>
+                        <dd class="col-sm-8 fw-bold">@Model.LastName</dd>
+                        <dt class="col-sm-4 text-muted">E-Posta:</dt>
+                        <dd class="col-sm-8">
+                            <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Telefon:</dt>
+                        <dd class="col-sm-8">@(Model.PhoneNumber ?? "-")</dd>
+
+                        <dt class="col-sm-4 text-muted">Departman:</dt>
+                        <dd class="col-sm-8"><span class="badge bg-secondary">@Model.Department</span></dd>
+
+                        <dt class="col-sm-4 text-muted mt-3">CV Dosyası:</dt>
+                        <dd class="col-sm-8 mt-3">
+                            @if (!string.IsNullOrEmpty(Model.CVFilePath))
+                            {
+                                <a href="@Model.CVFilePath" target="_blank" class="btn btn-outline-primary btn-sm w-100">
+                                    <i class="bi bi-file-earmark-pdf-fill me-2"></i> CV'yi Görüntüle / İndir
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning py-1 small mb-0">
+                                    <i class="bi bi-exclamation-circle"></i> CV Yüklenmemiş
+                                </div>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+
+                <div class="col-md-6 border-start border-light ps-md-4">
+                    <h5 class="text-primary border-bottom pb-2 mb-3">
+                        <i class="bi bi-pencil-square me-1"></i> Karar Ver
+                    </h5>
+
+                    <form asp-action="ReviewUser" method="post">
+                        <input type="hidden" name="userId" value="@Model.Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-dark">Yönetici Notu / Gerekçe:</label>
+                            <textarea name="note" class="form-control bg-light" rows="5" placeholder="Mülakat sonucu, eksik evrak durumu vb. notlarınızı buraya yazınız..." required></textarea>
+                            <div class="form-text">Bu not, işlem geçmişine kaydedilecektir.</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="decision" value="Approve" class="btn btn-success py-2 shadow-sm" onclick="return confirm('Bu personeli onaylıyor ve sisteme giriş yetkisi veriyor musunuz?')">
+                                <i class="bi bi-check-circle-fill me-2"></i> Başvuruyu ONAYLA
+                            </button>
+
+                            <button type="submit" name="decision" value="Reject" class="btn btn-danger py-2 shadow-sm" onclick="return confirm('DİKKAT: Kullanıcı silinecek ve geçmişe kaydedilecektir. Emin misiniz?')">
+                                <i class="bi bi-x-circle-fill me-2"></i> Başvuruyu REDDET
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer bg-light py-3">
+            <a href="/Account/PendingUsers" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Listeye Geri Dön
+            </a>
+        </div>
+    </div>
+</div>

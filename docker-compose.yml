@@ -1,0 +1,33 @@
+﻿version: '3.4'
+
+services:
+  # 1. SENİN UYGULAMAN (WEB)
+  webapp:
+    image: workflowapp
+    container_name: workflow_container
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080" # Bilgisayarının 5000 portunu, konteynırın 8080 portuna bağlar.
+    depends_on:
+      - db # Veritabanı açılmadan site açılmasın.
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Veritabanı bağlantısı (Server=db diyoruz çünkü aşağıdaki servisin adı db)
+      - ConnectionStrings__DefaultConnection=Server=db;Database=WorkFlowBasicDB;User Id=sa;Password=GucluSifre123!;TrustServerCertificate=True;
+
+  # 2. VERİTABANI (SQL SERVER)
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_container
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=GucluSifre123! # Şifre: Büyük harf, küçük harf, rakam ve sembol şart!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql # Veriler kaybolmasın diye kalıcı disk oluşturur.
+
+volumes:
+  sql_data:

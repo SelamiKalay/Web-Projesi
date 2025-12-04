@@ -1,0 +1,128 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.InventoryAssignment>
+@{
+    ViewData["Title"] = "Zimmetlerim";
+}
+
+<h3>🎒 Üzerimdeki Zimmetli Eşyalar</h3>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-success">Üzerinizde kayıtlı eşya bulunmamaktadır.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var assign in Model)
+        {
+            <div class="col-md-6">
+                <div class="card shadow-sm border-start border-4 @(assign.IsAccepted ? "border-success" : "border-danger")">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="card-title">@assign.InventoryItem.ItemName</h5>
+                            <span class="badge bg-light text-dark border">@assign.InventoryItem.Category</span>
+                        </div>
+                        <p class="card-text text-muted mb-2">Seri No: @assign.InventoryItem.SerialNumber</p>
+
+                        <hr />
+
+                        @if (assign.IsAccepted)
+                        {
+                            <div class="text-success fw-bold mb-2">
+                                <i class="bi bi-check-circle-fill"></i> Teslim Alındı
+                            </div>
+
+                            @if (assign.IsReturnRequested)
+                            {
+                                <div class="alert alert-warning py-1 small">İade talebi iletildi. Yönetici onayı bekleniyor.</div>
+                            }
+                            else
+                            {
+                                <form asp-action="RequestReturn" method="post">
+                                    <input type="hidden" name="assignmentId" value="@assign.Id" />
+                                    <button type="submit" class="btn btn-outline-danger btn-sm w-100" onclick="return confirm('Bu eşyayı iade etmek istediğinize emin misiniz?')">
+                                        <i class="bi bi-box-arrow-in-left"></i> İade Talebi Oluştur
+                                    </button>
+                                </form>
+                            }
+
+                            @if (!string.IsNullOrEmpty(assign.SignaturePath))
+                            {
+                                <div class="mt-2">
+                                    <small class="text-muted d-block">İmzanız:</small>
+                                    <img src="@assign.SignaturePath" style="height: 40px; border:1px solid #eee;" />
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning py-2 mb-2 small">
+                                <i class="bi bi-pen"></i> Teslim almak için imza atınız.
+                            </div>
+                            <button type="button" class="btn btn-success w-100" onclick="openSignatureModal(@assign.Id)">
+                                <i class="bi bi-pen-fill"></i> İmzala ve Teslim Al
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="modal fade" id="signatureModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">✍️ Dijital İmza</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="text-muted small">Lütfen kutunun içine imzanızı atınız.</p>
+                <canvas id="signature-pad" class="border border-2 border-secondary" width="400" height="200"></canvas>
+                <button class="btn btn-sm btn-secondary mt-2" onclick="clearSignature()">Temizle</button>
+            </div>
+            <div class="modal-footer">
+                <form asp-action="AcceptItem" method="post" id="signatureForm">
+                    <input type="hidden" name="assignmentId" id="modalAssignId" />
+                    <input type="hidden" name="signatureData" id="signatureDataInput" />
+                    <button type="button" class="btn btn-primary" onclick="saveSignature()">Kaydet ve Onayla</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+
+    <script>
+        var signaturePad;
+        var modal = new bootstrap.Modal(document.getElementById('signatureModal'));
+
+        function openSignatureModal(id) {
+            document.getElementById('modalAssignId').value = id;
+            var canvas = document.getElementById('signature-pad');
+
+            // İmza pad'ini başlat
+            if(!signaturePad) signaturePad = new SignaturePad(canvas);
+            signaturePad.clear();
+
+            modal.show();
+        }
+
+        function clearSignature() {
+            signaturePad.clear();
+        }
+
+        function saveSignature() {
+            if (signaturePad.isEmpty()) {
+                alert("Lütfen imza atınız.");
+            } else {
+                var dataUrl = signaturePad.toDataURL(); // İmzayı resim (Base64) olarak al
+                document.getElementById('signatureDataInput').value = dataUrl;
+                document.getElementById('signatureForm').submit(); // Formu gönder
+            }
+        }
+    </script>
+}

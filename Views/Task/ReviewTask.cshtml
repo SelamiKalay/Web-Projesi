@@ -1,0 +1,83 @@
+﻿@model WorkFlowBasic.Models.WorkTask
+@{
+    ViewData["Title"] = "Görevi İncele";
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="bi bi-search"></i> Görev İnceleme</h5>
+            <span class="badge bg-light text-dark">@Model.AssignedTo?.FullName</span>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 border-end">
+                    <h6>Görev Başlığı</h6>
+                    <p class="fw-bold">@Model.Title</p>
+
+                    <h6>Açıklama</h6>
+                    <p class="bg-light p-2 rounded small">@Model.Description</p>
+
+                    @if (!string.IsNullOrEmpty(Model.AttachmentPath))
+                    {
+                        <a href="@Model.AttachmentPath" target="_blank" class="btn btn-sm btn-outline-secondary mb-3">
+                            <i class="bi bi-file-earmark-arrow-down"></i> Yöneticinin Dosyası
+                        </a>
+                    }
+                </div>
+
+                <div class="col-md-6 ps-4">
+                    <h6 class="text-primary">Personelin Yanıtı</h6>
+                    <div class="alert alert-secondary">
+                        <strong>Not:</strong> @Model.CompletionNote
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.CompletionAttachmentPath))
+                    {
+                        <div class="mb-4">
+                            <label class="small text-muted">Personelin Yüklediği Dosya:</label><br />
+                            <a href="@Model.CompletionAttachmentPath" target="_blank" class="btn btn-success w-100">
+                                <i class="bi bi-download"></i> Dosyayı İndir / Görüntüle
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted small fst-italic">Personel dosya yüklemedi.</p>
+                    }
+
+                    <hr />
+
+                    <form asp-action="ProcessTask" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+
+                        <div class="mb-2">
+                            <label class="fw-bold small">Yönetici Notu (Revize için gereklidir):</label>
+                            <textarea name="managerNote" class="form-control form-control-sm" rows="2"></textarea>
+                        </div>
+
+                        <div class="mb-3 bg-warning bg-opacity-10 p-2 rounded border border-warning">
+                            <label class="fw-bold small text-warning-emphasis">Revize İçin Yeni Bitiş Tarihi (Opsiyonel):</label>
+                            <input type="date" name="newDueDate" class="form-control form-control-sm" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <small class="text-muted" style="font-size:0.65rem">*Sadece 'Revize İste' dediğinizde geçerli olur.</small>
+                        </div>
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="submit" name="decision" value="Approve" class="btn btn-success">
+                                <i class="bi bi-check-lg"></i> Onayla (Bitir)
+                            </button>
+                            <button type="submit" name="decision" value="Revise" class="btn btn-warning text-dark">
+                                <i class="bi bi-arrow-counterclockwise"></i> Revize İste
+                            </button>
+                            <button type="submit" name="decision" value="Reject" class="btn btn-outline-danger">
+                                <i class="bi bi-x-lg"></i> Reddet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <a href="/Task/AssignedTasks" class="btn btn-secondary btn-sm">Listeye Dön</a>
+        </div>
+    </div>
+</div>

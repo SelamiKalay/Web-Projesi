@@ -1,0 +1,81 @@
+﻿@model WorkFlowBasic.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Personel Kaydı";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h4 class="mb-0">📝 Personel Kayıt Formu</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="Register" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Ad</label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Soyad</label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Departman</label>
+                            <select asp-for="Department" class="form-select">
+                                <option>Satış</option>
+                                <option>Pazarlama</option>
+                                <option>IT / Yazılım</option>
+                                <option>Muhasebe</option>
+                                <option>İnsan Kaynakları</option>
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Email (Kullanıcı Adı)</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="form-label">Telefon</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="05XX..." />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">CV Yükle (PDF/Word)</label>
+                            <input asp-for="CVFile" type="file" class="form-control" accept=".pdf,.doc,.docx" />
+                            <small class="text-muted">Zorunlu değildir.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Şifre</label>
+                            <input asp-for="Password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Şifre Tekrar</label>
+                            <input asp-for="ConfirmNewPassword" class="form-control" />
+                            <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">Başvuruyu Tamamla</button>
+                            <a href="/Account/Login" class="btn btn-link text-decoration-none">Zaten hesabım var, Giriş Yap</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

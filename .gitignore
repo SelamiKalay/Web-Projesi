@@ -1,0 +1,10 @@
+bin/
+obj/
+.vs/
+.vscode/
+wwwroot/uploads/
+wwwroot/task_files/
+wwwroot/signatures/
+appsettings.Development.json
+*.user
+*.suo

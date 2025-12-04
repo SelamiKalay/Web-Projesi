@@ -1,0 +1,83 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.WorkTask>
+@{
+    ViewData["Title"] = "Atadığım Görevler";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>📋 Ekibime Atadığım İşler</h3>
+    <a href="/Task/Create" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Yeni Görev Ata</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Görev</th>
+                    <th>Personel</th>
+                    <th>Dosya</th>
+                    <th>Son Tarih</th>
+                    <th>Durum</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var task in Model)
+                {
+                    <tr>
+                        <td>@task.Title</td>
+                        <td>@task.AssignedTo?.FullName</td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(task.AttachmentPath))
+                            {
+                                <a href="@task.AttachmentPath" target="_blank" class="text-info" title="Dosyayı Gör">
+                                    <i class="bi bi-file-earmark-text-fill fs-5"></i>
+                                </a>
+                            }
+                            else
+                            {
+
+                                <span class="text-muted">-</span>
+                            }
+                        </td>
+                        <td>@task.DueDate.ToShortDateString()</td>
+                        <td>
+                            @if (task.Status == WorkFlowBasic.Models.TaskStatus.Assigned)
+                            {
+                                <span class="badge bg-secondary">Devam Ediyor</span>
+                            }
+                            else if (task.Status == WorkFlowBasic.Models.TaskStatus.Completed)
+                            {
+                                <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                            }
+                            else if (task.Status == WorkFlowBasic.Models.TaskStatus.RevisionRequested)
+                            {
+                                <span class="badge bg-info text-dark">Revizede</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Tamamlandı</span>
+                            }
+                        </td>
+                        <td>
+                            @if (task.Status == WorkFlowBasic.Models.TaskStatus.Completed)
+                            {
+                                <a href="/Task/ReviewTask/@task.Id" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-eye"></i> İncele
+                                </a>
+                            }
+                            else if (task.Status == WorkFlowBasic.Models.TaskStatus.Verified)
+                            {
+                                <span class="text-success small"><i class="bi bi-check-all"></i> Onaylandı</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">-</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

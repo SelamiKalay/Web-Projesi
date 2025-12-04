@@ -1,0 +1,242 @@
+﻿@model WorkFlowBasic.Models.WorkflowRequest
+
+@{
+    ViewData["Title"] = "Yeni Talep";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-file-earmark-plus"></i> Yeni Talep Formu</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Talep Türü</label>
+                            <select asp-for="ProcessDefinitionId" class="form-select" asp-items="ViewBag.ProcessList" id="ProcessSelect">
+                                <option value="">-- Seçiniz --</option>
+                            </select>
+                            <span asp-validation-for="ProcessDefinitionId" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="RequestTitle" class="form-label fw-bold">Konu / Başlık</label>
+                            <input asp-for="RequestTitle" class="form-control" placeholder="Örn: Yıllık İzin" />
+                            <span asp-validation-for="RequestTitle" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label asp-for="StartDate" class="form-label fw-bold">Başlangıç</label>
+                                    <input asp-for="StartDate" type="date" class="form-control" id="StartDate" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-3">
+                                    <label asp-for="EndDate" class="form-label fw-bold">Bitiş</label>
+                                    <input asp-for="EndDate" type="date" class="form-control" id="EndDate" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="divAmount" style="display:none;">
+                            <label asp-for="Amount" class="form-label fw-bold">Tutar (Varsa)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₺</span>
+                                <input asp-for="Amount" type="number" class="form-control" placeholder="0.00" id="inputAmount" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="divFile" style="display:none;">
+                            <label class="form-label fw-bold">Ek Belge / Fiş</label>
+                            <input type="file" name="attachment" class="form-control" id="inputFile" />
+                            <small class="text-muted">Resim veya PDF formatında yükleyebilirsiniz.</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label fw-bold">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="Detayları buraya yazınız..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <input type="hidden" id="DynamicDataJson" name="FormData" />
+
+                        <div id="dynamicArea" class="alert alert-light border d-none mt-3">
+                            <h6 class="text-primary border-bottom pb-2"><i class="bi bi-stars"></i> Ekstra Bilgiler</h6>
+                            <div id="dynamicInputs"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="/Requests/MyRequests" class="btn btn-secondary">İptal</a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-send"></i> Gönder
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+
+            // --- 1. TARİH KISITLAMALARI ---
+            var today = new Date().toISOString().split('T')[0];
+            var maxStartObj = new Date();
+            maxStartObj.setMonth(maxStartObj.getMonth() + 3);
+            var maxStartDate = maxStartObj.toISOString().split('T')[0];
+
+            var startDateInput = document.getElementById('StartDate');
+            var endDateInput = document.getElementById('EndDate');
+
+            if (startDateInput) {
+                startDateInput.setAttribute('min', today);
+                startDateInput.setAttribute('max', maxStartDate);
+
+                startDateInput.addEventListener('blur', function() {
+                    if(this.value && this.value < today) {
+                        alert("Geçmiş tarihli talep oluşturulamaz.");
+                        this.value = today;
+                    }
+                });
+
+                startDateInput.addEventListener('change', function() {
+                    var startVal = this.value;
+                    if(startVal) {
+                        endDateInput.setAttribute('min', startVal);
+                        var startDateObj = new Date(startVal);
+                        var maxDurationObj = new Date(startDateObj);
+                        maxDurationObj.setMonth(maxDurationObj.getMonth() + 1);
+                        var maxEndDate = maxDurationObj.toISOString().split('T')[0];
+
+                        endDateInput.setAttribute('max', maxEndDate);
+
+                        if(endDateInput.value > maxEndDate){
+                            endDateInput.value = "";
+                            alert("İzin süresi en fazla 1 ay olabilir.");
+                        }
+                        if(endDateInput.value && endDateInput.value < startVal) {
+                            endDateInput.value = startVal;
+                        }
+                    }
+                });
+            }
+
+            // --- 2. ALAN GİZLEME/GÖSTERME MANTIĞI (GÜNCELLENDİ) ---
+            function toggleFields() {
+                var selectedValue = $("#ProcessSelect").val(); // ID'yi al
+                var selectedText = $("#ProcessSelect option:selected").text(); // Metni al
+
+                // 1. Adım: Önce her şeyi GİZLE ve Temizle
+                $('#divAmount').hide();
+                $('#divFile').hide();
+
+                // Eğer "Seçiniz" (Boş) ise fonksiyondan çık, hiçbir şeyi açma.
+                if (!selectedValue) {
+                    $('#inputAmount').val('');
+                    $('#inputFile').val('');
+                    return;
+                }
+
+                // 2. Adım: Metne göre gerekli olanları GÖSTER
+                // Varsayılan olarak: Tutar ve Dosya gerekliyse aşağıda açılır.
+
+                var showAmount = true;
+                var showFile = true;
+
+                // Gizleme Kuralları:
+                if (selectedText.includes("Yıllık İzin") ||
+                    selectedText.includes("Mazeret") ||
+                    selectedText.includes("Hastalık") ||
+                    selectedText.includes("IT Destek") ||
+                    selectedText.includes("Araç Tahsis")) {
+                    showAmount = false;
+                }
+
+                if (selectedText.includes("Yıllık İzin") ||
+                    selectedText.includes("Avans") ||
+                    selectedText.includes("Araç Tahsis")) {
+                    showFile = false;
+                }
+
+                // Karara göre aç
+                if(showAmount) $('#divAmount').show();
+                else $('#inputAmount').val(''); // Gizliyse içini boşalt
+
+                if(showFile) $('#divFile').show();
+                else $('#inputFile').val('');
+            }
+
+            // Değişiklik olduğunda çalıştır
+            $('#ProcessSelect').change(function() {
+                toggleFields();
+                loadDynamicSchema();
+            });
+
+            // Sayfa ilk yüklendiğinde çalıştır
+            toggleFields();
+            loadDynamicSchema();
+
+
+            // --- 3. DİNAMİK FORM ŞEMASI GETİRME ---
+            function loadDynamicSchema() {
+                var processId = $('#ProcessSelect').val();
+                var area = $('#dynamicArea');
+                var inputsDiv = $('#dynamicInputs');
+
+                inputsDiv.empty();
+                area.addClass('d-none');
+
+                if(!processId) return;
+
+                $.get('/Requests/GetProcessSchema?id=' + processId, function(data) {
+                    if(data && data.length > 0) {
+                        area.removeClass('d-none');
+                        var schema = JSON.parse(data);
+
+                        schema.forEach(function(field) {
+                            var inputType = field.Type || 'text';
+                            var html = `
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">${field.Label}</label>
+                                    <input type="${inputType}" class="form-control dynamic-field" data-label="${field.Label}" placeholder="${field.Label} giriniz..." required />
+                                </div>
+                            `;
+                            inputsDiv.append(html);
+                        });
+                    }
+                });
+            }
+
+            // --- 4. FORM GÖNDERİMİ ---
+            $('form').submit(function() {
+                var dynamicValues = {};
+                $('.dynamic-field').each(function() {
+                    var label = $(this).data('label');
+                    var value = $(this).val();
+                    if(value) { dynamicValues[label] = value; }
+                });
+                if(Object.keys(dynamicValues).length > 0) {
+                    $('#DynamicDataJson').val(JSON.stringify(dynamicValues));
+                }
+            });
+
+        });
+    </script>
+}

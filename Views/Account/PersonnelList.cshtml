@@ -1,0 +1,86 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.ApplicationUser>
+@{
+    ViewData["Title"] = "Personel Yönetimi";
+}
+
+<h3><i class="bi bi-people-fill"></i> Personel Yönetimi</h3>
+<p class="text-muted">Personellerin sisteme giriş yetkisini buradan yönetebilirsiniz.</p>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-warning">
+        Sistemde kayıtlı personel bulunmamaktadır.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Durum</th>
+                        <th>Ad Soyad</th>
+                        <th>Email</th>
+                        <th>Departman</th>
+                        <th class="text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        // Kullanıcı kilitli mi kontrol et
+                        bool isLocked = user.LockoutEnd.HasValue && user.LockoutEnd > DateTime.UtcNow;
+
+                        // Kilitliyse satırı gri yap
+                        string rowClass = isLocked ? "table-secondary text-muted" : "";
+
+                        <tr class="@rowClass">
+                            <td>
+                                @if (isLocked)
+                                {
+                                    <span class="badge bg-danger">PASİF</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">AKTİF</span>
+                                }
+                            </td>
+                            <td>
+                                <span class="fw-bold">@user.FullName</span>
+                            </td>
+                            <td>@user.Email</td>
+                            <td>@user.Department</td>
+                            <td class="text-end">
+                                <!-- 1. KİLİTLEME / AÇMA BUTONU (MÜDÜR VE ADMIN GÖRÜR) -->
+                                @if (isLocked)
+                                {
+                                    <a href="/Account/ToggleUserStatus?userId=@user.Id" class="btn btn-success btn-sm" onclick="return confirm('Bu personelin giriş yasağını kaldırmak istiyor musunuz?')">
+                                        <i class="bi bi-unlock-fill"></i> Kilidi Aç / Geri Al
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="/Account/ToggleUserStatus?userId=@user.Id" class="btn btn-outline-danger btn-sm" onclick="return confirm('DİKKAT! @user.FullName sisteme giriş yapamayacak. Onaylıyor musunuz?')">
+                                        <i class="bi bi-lock-fill"></i> Kilitle
+                                    </a>
+                                }
+
+                                <!-- 2. KALICI SİLME BUTONU (SADECE ADMIN GÖRÜR - YENİ EKLENDİ) -->
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a href="/Account/HardDeleteUser?userId=@user.Id" class="btn btn-dark btn-sm ms-1"
+                                       onclick="return confirm('ÇOK DİKKAT! Bu personelin TÜM GEÇMİŞİ (Talepler, Loglar, Zimmetler) silinecek ve veritabanından tamamen kaldırılacaktır. Bu işlem geri alınamaz! Onaylıyor musunuz?')">
+                                        <i class="bi bi-trash-fill"></i> Yok Et
+                                    </a>
+                                }
+                                <!-- --------------------------------------------------------- -->
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

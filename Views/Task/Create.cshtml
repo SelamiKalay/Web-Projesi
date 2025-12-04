@@ -1,0 +1,109 @@
+﻿@model WorkFlowBasic.Models.WorkTask
+@{
+    ViewData["Title"] = "Yeni Görev Ata";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">📋 Yeni Görev Oluştur</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="fw-bold">Departman Seç</label>
+                            <select id="deptSelect" class="form-select">
+                                <option value="">-- Seçiniz --</option>
+                                @foreach (var dept in ViewBag.Departments)
+                                {
+                                    <option value="@dept">@dept</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Personel Seç</label>
+                            <select asp-for="AssignedToId" id="userSelect" class="form-select" required>
+                                <option value="">-- Önce Departman Seçiniz --</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Görev Başlığı</label>
+                            <input asp-for="Title" class="form-control" placeholder="Örn: Proje Dokümantasyonu" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Proje Detay Dosyası (PDF/Resim)</label>
+                            <input type="file" name="taskFile" class="form-control" accept=".pdf,.jpg,.png,.docx" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <label class="fw-bold">Başlangıç</label>
+                                <input asp-for="StartDate" type="date" class="form-control" id="StartDate" required />
+                            </div>
+                            <div class="col-6 mb-3">
+                                <label class="fw-bold">Bitiş (Deadline)</label>
+                                <input asp-for="DueDate" type="date" class="form-control" id="EndDate" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="fw-bold">Açıklama</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success">Görevi Ata</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 1. Departmana Göre Personel Getir
+            $('#deptSelect').change(function() {
+                var dept = $(this).val();
+                var userSelect = $('#userSelect');
+                userSelect.empty().append('<option value="">Yükleniyor...</option>');
+
+                if(dept) {
+                    // EncodeURIComponent, "IT / Yazılım" gibi boşluklu ifadeleri düzgün gönderir
+                    $.get('/Task/GetUsersByDepartment?department=' + encodeURIComponent(dept), function(data) {
+                        userSelect.empty().append('<option value="">-- Personel Seçiniz --</option>');
+                        if(data.length === 0) {
+                            userSelect.append('<option disabled>Bu departmanda personel yok</option>');
+                        } else {
+                            data.forEach(function(u) {
+                                userSelect.append(`<option value="${u.id}">${u.name}</option>`);
+                            });
+                        }
+                    });
+                } else {
+                    userSelect.empty().append('<option value="">-- Önce Departman Seçiniz --</option>');
+                }
+            });
+
+            // 2. Tarih Kısıtlamaları
+            var today = new Date().toISOString().split('T')[0];
+            var startInput = document.getElementById('StartDate');
+            var endInput = document.getElementById('EndDate');
+
+            startInput.setAttribute('min', today);
+            startInput.addEventListener('change', function() {
+                endInput.setAttribute('min', this.value);
+            });
+        });
+    </script>
+}

@@ -1,0 +1,361 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using WorkFlowBasic.Models
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - WorkFlow Basic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #212529 0%, #343a40 100%);
+            color: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+
+            .sidebar a {
+                color: rgba(255,255,255,0.75);
+                text-decoration: none;
+                padding: 12px 20px;
+                display: block;
+                transition: all 0.3s;
+                border-radius: 5px;
+                margin: 0 10px;
+            }
+
+                .sidebar a:hover {
+                    background-color: rgba(255,255,255,0.1);
+                    color: white;
+                    transform: translateX(5px);
+                }
+
+            .sidebar .active {
+                background-color: #0d6efd;
+                color: white;
+                box-shadow: 0 4px 6px rgba(13, 110, 253, 0.4);
+            }
+
+        .sidebar-brand-link {
+            text-decoration: none;
+            color: white !important;
+            display: block;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 20px;
+            transition: opacity 0.3s;
+        }
+
+            .sidebar-brand-link:hover {
+                opacity: 0.8;
+                background: transparent !important;
+                transform: none !important;
+            }
+
+        .content {
+            padding: 30px;
+        }
+
+        .chat-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #0d6efd, #0a58ca);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+            z-index: 1000;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .chat-btn:hover {
+                transform: scale(1.1);
+            }
+
+        .chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .chat-header {
+            background: #0d6efd;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            background: white;
+        }
+
+        .msg {
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .msg-user {
+            align-self: flex-end;
+            background: #0d6efd;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg-bot {
+            align-self: flex-start;
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 2px;
+        }
+
+        @@media print {
+            .sidebar, .navbar, .btn, footer, .d-print-none, .timeline, .card-header, .chat-btn, .chat-window, #chatWindow {
+                display: none !important;
+            }
+
+            .col-md-7, .col-md-10, .content {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+
+            .card {
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+            .bg-light {
+                background-color: #fff !important;
+                border: 1px solid #000 !important;
+            }
+
+            @@page {
+                margin: 1cm;
+                size: auto;
+            }
+
+            body {
+                font-family: "Times New Roman", Times, serif !important;
+                -webkit-print-color-adjust: exact;
+                color: #000 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            @if (User.Identity!.IsAuthenticated)
+            {
+                <div class="col-md-2 px-0 sidebar d-none d-md-block">
+                    <a href="/" class="sidebar-brand-link">
+                        <h4 class="m-0 fw-bold"><i class="bi bi-diagram-3-fill me-2"></i>WorkFlow</h4>
+                    </a>
+
+                    <div class="py-2">
+                        <small class="text-uppercase text-white-50 px-3 fw-bold" style="font-size:0.7rem">Genel</small>
+                        <a href="/" class="mt-2 @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" ? "active" : "")"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
+                        <small class="text-uppercase text-white-50 px-3 fw-bold d-block mt-4" style="font-size:0.7rem">İşlemler</small>
+
+                        @if (User.IsInRole("Personel"))
+                        {
+                            <a href="/Requests/Create"><i class="bi bi-plus-circle me-2"></i> Yeni Talep</a>
+                            <a href="/Requests/MyRequests"><i class="bi bi-list-task me-2"></i> Taleplerim</a>
+                            <a href="/Inventory/MyInventory"><i class="bi bi-box-seam me-2"></i> Zimmetlerim</a>
+                            <a href="/Task/MyTasks"><i class="bi bi-clipboard-check me-2"></i> Görevlerim</a>
+                        }
+
+                        <a href="/Calendar/Index"><i class="bi bi-calendar3 me-2"></i> İzin Takvimi</a>
+
+                        @if (User.IsInRole("Manager") || User.IsInRole("Admin"))
+                        {
+                            <small class="text-uppercase text-white-50 px-3 fw-bold d-block mt-4" style="font-size:0.7rem">Yönetim Paneli</small>
+                            <a href="/Approvals/Index" class="text-warning"><i class="bi bi-check-circle me-2"></i> Onay Bekleyenler</a>
+                            <a href="/Approvals/RejectedIndex" class="text-secondary" style="font-size: 0.9rem;"><i class="bi bi-clock-history me-2"></i> Red Geçmişi</a>
+                            <a href="/Task/AssignedTasks" class="text-primary"><i class="bi bi-list-check me-2"></i> Görev Yönetimi</a>
+                            <a href="/Account/PendingUsers" class="text-info"><i class="bi bi-person-plus-fill me-2"></i> Personel Başvuruları</a>
+                            <a href="/Account/PersonnelList" class="text-danger"><i class="bi bi-people-fill me-2"></i> Personel Listesi</a>
+                            <a href="/Inventory/Index"><i class="bi bi-pc-display-horizontal me-2"></i> Envanter / Zimmet</a>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <a href="/Account/UserList" class="text-success mt-2"><i class="bi bi-person-badge-fill me-2"></i> Rol Yönetimi</a>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="@(User.Identity!.IsAuthenticated ? "col-md-10" : "col-12") px-0">
+                <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom px-4 shadow-sm" style="height: 70px;">
+                    <div class="ms-auto d-flex align-items-center">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            var user = await UserManager.GetUserAsync(User);
+                            var displayName = user != null ? $"{user.FirstName} {user.LastName}" : User.Identity.Name;
+
+                            <div class="dropdown me-3">
+                                <button class="btn btn-link text-secondary position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" onclick="markNotificationsRead()">
+                                    <i class="bi bi-bell-fill fs-5"></i>
+                                    <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none;">0</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" id="notifList" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                                    <li><h6 class="dropdown-header">Bildirimler</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li class="text-center p-2 text-muted small">Bildirim yok</li>
+                                </ul>
+                            </div>
+
+                            <div class="dropdown">
+                                <button class="btn btn-light rounded-pill px-3 py-2 text-secondary fw-bold dropdown-toggle border" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle me-2 text-primary"></i> @displayName
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                                    <li><a class="dropdown-item py-2" href="/Account/ChangePassword"><i class="bi bi-shield-lock me-2 text-warning"></i> Şifre Değiştir</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2 text-danger" href="/Account/Logout"><i class="bi bi-box-arrow-right me-2"></i> Çıkış Yap</a></li>
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </nav>
+
+                <div class="content">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        @if (User.Identity.IsAuthenticated)
+        {
+                <text>
+                var connection = new signalR.HubConnectionBuilder().withUrl("/generalHub").build();
+                connection.on("ReceiveNotification", function (message) {
+                    const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true, didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); } });
+                    Toast.fire({ icon: 'info', title: message });
+                    setTimeout(function() { window.location.reload(); }, 1500);
+                });
+                connection.on("UpdateNotificationCount", function () { updateBadge(); loadNotifications(); });
+                connection.start().catch(function (err) { console.error(err.toString()); });
+
+                $(document).ready(function() { updateBadge(); loadNotifications(); });
+                function updateBadge() { $.get('/Notifications/GetUnreadCount', function(c) { if(c>0){$('#notifBadge').text(c).show();}else{$('#notifBadge').hide();} }); }
+                function loadNotifications() {
+                    $.get('/Notifications/GetMyNotifications', function(data) {
+                        var list = $('#notifList'); list.find('li:not(:first):not(:nth-child(2))').remove();
+                        if(data.length===0){ list.append('<li class="text-center p-2 text-muted small">Bildirim yok</li>'); }
+                        else { data.forEach(function(n){
+                            var bg=n.isRead?'':'bg-light';
+                            var date = new Date(n.createdDate);
+                            var timeStr = date.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                            var dateStr = date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' });
+                            var html = `<li><a class="dropdown-item ${bg} p-2 border-bottom" href="${n.linkUrl || '#'}"><div class="d-flex justify-content-between align-items-center"><small class="fw-bold text-primary">${n.title}</small><small class="text-muted" style="font-size:0.7rem">${dateStr} ${timeStr}</small></div><span class="small text-dark d-block mt-1">${n.message}</span></a></li>`;
+                            list.append(html);
+                        }); }
+                    });
+                }
+                function markNotificationsRead() { $.post('/Notifications/MarkAllAsRead', function(){ $('#notifBadge').hide(); }); }
+                </text>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <text>Swal.fire({ title: 'Başarılı!', text: '@Html.Raw(TempData["Success"])', icon: 'success', confirmButtonText: 'Tamam', confirmButtonColor: '#0d6efd' });</text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>Swal.fire({ title: 'Hata!', text: '@Html.Raw(TempData["Error"])', icon: 'error', confirmButtonText: 'Tamam', confirmButtonColor: '#dc3545' });</text>
+        }
+
+        function toggleChat() {
+            var chat = document.getElementById('chatWindow');
+            if (chat.style.display === 'none' || chat.style.display === '') { chat.style.display = 'flex'; document.getElementById('chatInput').focus(); }
+            else { chat.style.display = 'none'; }
+        }
+        function handleEnter(e) { if (e.key === 'Enter') sendMessage(); }
+        function sendMessage() {
+            var input = document.getElementById('chatInput');
+            var message = input.value.trim();
+            if (!message) return;
+            addMessage(message, 'user');
+            input.value = '';
+            fetch('/Chat/SendMessage', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'message=' + encodeURIComponent(message) })
+            .then(response => response.json()).then(data => { addMessage(data.reply, 'bot'); }).catch(error => { addMessage("Bağlantı hatası.", 'bot'); });
+        }
+        function addMessage(text, sender) {
+            var body = document.getElementById('chatBody');
+            var div = document.createElement('div');
+            div.classList.add('msg', sender === 'user' ? 'msg-user' : 'msg-bot');
+            div.innerHTML = text;
+            body.appendChild(div);
+            body.scrollTop = body.scrollHeight;
+        }
+    </script>
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <button class="chat-btn" onclick="toggleChat()"><i class="bi bi-chat-dots-fill"></i></button>
+        <div class="chat-window" id="chatWindow">
+            <div class="chat-header"><span>👳‍♂️ İbn-i Sina Asistan</span><button type="button" class="btn-close btn-close-white" onclick="toggleChat()"></button></div>
+            <div class="chat-body" id="chatBody"><div class="msg msg-bot">Merhabalar! Ben İbn-i Sina. Size nasıl yardımcı olabilirim?</div></div>
+            <div class="chat-footer"><input type="text" id="chatInput" class="form-control" placeholder="Bir soru sorun..." onkeypress="handleEnter(event)"><button class="btn btn-primary" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button></div>
+        </div>
+    }
+</body>
+</html>

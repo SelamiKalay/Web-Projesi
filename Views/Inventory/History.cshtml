@@ -1,0 +1,105 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.InventoryAssignment>
+@{
+    ViewData["Title"] = "Zimmet Geçmişi";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mb-0"><i class="bi bi-clock-history text-primary"></i> Zimmet Geçmişi</h3>
+            <div class="text-muted">
+                Eşya: <strong>@ViewBag.ItemName</strong> <span class="mx-2">|</span> Seri No: <strong>@ViewBag.Serial</strong>
+            </div>
+        </div>
+        <a href="/Inventory/Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Listeye Dön</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-warning">
+            Bu eşya için henüz herhangi bir zimmet kaydı bulunmamaktadır.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Personel</th>
+                            <th>Veriliş Tarihi</th>
+                            <th>İade Tarihi</th>
+                            <th>Durum</th>
+                            <th>Teslim İmzası</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            /* Aktif kayıt mı? (İade edilmemiş) */
+                            bool isActive = item.ReturnDate == null;
+                            string rowClass = isActive ? "table-primary" : "";
+
+                            <tr class="@rowClass">
+                                <td>
+                                    <span class="fw-bold">@item.AssignedToUser?.FullName</span><br />
+                                    <small class="text-muted">@item.AssignedToUser?.Email</small>
+                                </td>
+                                <td>@item.AssignedDate.ToString("g")</td>
+                                <td>
+                                    @if (item.ReturnDate.HasValue)
+                                    {
+                                        <span class="text-muted">@item.ReturnDate.Value.ToString("g")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">Kullanımda</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.IsAccepted)
+                                    {
+                                        <span class="text-success small"><i class="bi bi-check-all"></i> Onaylandı</span>
+                                        <div class="small text-muted">@item.AcceptanceDate?.ToString("g")</div>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">İmza Bekliyor</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.SignaturePath))
+                                    {
+                                        <img src="@item.SignaturePath" style="height: 40px; border: 1px solid #ccc; background: #fff; cursor: pointer;"
+                                             data-bs-toggle="modal" data-bs-target="#sigModal_@item.Id" />
+
+                                        <div class="modal fade" id="sigModal_@item.Id" tabindex="-1">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Personel İmzası</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center bg-light">
+                                                        <img src="@item.SignaturePath" class="img-fluid border bg-white" />
+                                                        <div class="mt-2 fw-bold">@item.AssignedToUser?.FullName</div>
+                                                        <div class="small text-muted">Tarih: @item.AcceptanceDate?.ToString("g")</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

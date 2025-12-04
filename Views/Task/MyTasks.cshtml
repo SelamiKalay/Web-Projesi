@@ -1,0 +1,93 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.WorkTask>
+@{
+    ViewData["Title"] = "Görevlerim";
+}
+
+<h3>📝 Bana Atanan Görevler</h3>
+<hr />
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Henüz size atanmış bir görev bulunmamaktadır.</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var task in Model)
+        {
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100 border-start border-4 @(task.Status == WorkFlowBasic.Models.TaskStatus.Verified ? "border-success" : (task.Status == WorkFlowBasic.Models.TaskStatus.RevisionRequested ? "border-warning" : "border-primary"))">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title mb-0">@task.Title</h5>
+
+                            @if (task.Status == WorkFlowBasic.Models.TaskStatus.RevisionRequested)
+                            {
+                                <span class="badge bg-warning text-dark">Revize İsteniyor!</span>
+                            }
+                            else if (task.Status == WorkFlowBasic.Models.TaskStatus.Verified)
+                            {
+                                <span class="badge bg-success">Onaylandı</span>
+                            }
+                            else if (task.Status == WorkFlowBasic.Models.TaskStatus.Completed)
+                            {
+                                <span class="badge bg-info text-dark">İnceleniyor</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Devam Ediyor</span>
+                            }
+                        </div>
+
+                        <small class="text-muted d-block mb-2">Atayan: @task.AssignedBy?.FullName</small>
+
+                        <p class="card-text bg-light p-2 rounded small">@task.Description</p>
+
+                        @if (!string.IsNullOrEmpty(task.AttachmentPath))
+                        {
+                            <div class="mb-2">
+                                <a href="@task.AttachmentPath" target="_blank" class="btn btn-sm btn-outline-info w-100 text-start">
+                                    <i class="bi bi-paperclip me-2"></i> Proje Dosyasını İndir/Gör
+                                </a>
+                            </div>
+                        }
+
+                        <div class="d-flex justify-content-between small text-muted mb-3 border-bottom pb-2">
+                            <span>Baş: @task.StartDate.ToShortDateString()</span>
+                            <span class="text-danger fw-bold">Bit: @task.DueDate.ToShortDateString()</span>
+                        </div>
+
+                        @if (task.Status == WorkFlowBasic.Models.TaskStatus.Assigned || task.Status == WorkFlowBasic.Models.TaskStatus.RevisionRequested)
+                        {
+                            <form asp-action="CompleteTask" method="post" enctype="multipart/form-data">
+                                <input type="hidden" name="id" value="@task.Id" />
+
+                                <div class="mb-2">
+                                    <label class="small fw-bold text-primary">Yapılan İş Dosyası (Zorunlu Değil)</label>
+                                    <input type="file" name="completionFile" class="form-control form-control-sm" />
+                                </div>
+
+                                <div class="input-group">
+                                    <input type="text" name="note" class="form-control form-control-sm" placeholder="Tamamlama notu..." required />
+                                    <button class="btn btn-success btn-sm">Teslim Et</button>
+                                </div>
+                            </form>
+                        }
+                        else if (task.Status == WorkFlowBasic.Models.TaskStatus.Completed)
+                        {
+                            <div class="alert alert-warning py-1 text-center mb-0 small">
+                                <i class="bi bi-hourglass-split"></i> Yönetici Onayı Bekliyor
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success py-1 text-center mb-0 small">
+                                <i class="bi bi-check-all"></i> İşlem Tamamlandı
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

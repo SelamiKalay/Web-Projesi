@@ -1,0 +1,140 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.WorkflowRequest>
+
+@{
+    ViewData["Title"] = "İş Listesi";
+}
+
+<h3 class="text-warning"><i class="bi bi-list-check"></i> Yönetici İş Listesi</h3>
+<hr />
+
+<div class="card mb-4 bg-light border-0">
+    <div class="card-body py-3">
+        <form method="get" asp-action="Index">
+            <div class="row g-2 align-items-center">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" name="searchString" value="@ViewBag.CurrentFilter" class="form-control" placeholder="Personel adı veya konu ara..." />
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select name="statusFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="1" selected="@(ViewBag.CurrentStatus == WorkFlowBasic.Models.RequestStatus.Pending)">⏳ Onay Bekleyenler</option>
+                        <option value="2" selected="@(ViewBag.CurrentStatus == WorkFlowBasic.Models.RequestStatus.Approved)">✅ Onaylanmışlar</option>
+                        <option value="3" selected="@(ViewBag.CurrentStatus == WorkFlowBasic.Models.RequestStatus.Rejected)">❌ Reddedilenler</option>
+                        <option value="">📂 Tüm Kayıtlar</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Ara / Yenile</button>
+                </div>
+                <div class="col-md-2 text-end">
+                    <a href="/Approvals/Index" class="btn btn-link text-decoration-none">Temizle</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form asp-action="ProcessBulk" method="post" id="bulkForm">
+
+    @if (ViewBag.CurrentStatus == null || ViewBag.CurrentStatus == WorkFlowBasic.Models.RequestStatus.Pending)
+    {
+        <div class="mb-3 d-flex gap-2">
+            <button type="submit" name="decision" value="Approve" class="btn btn-success btn-sm" onclick="return confirm('Seçilenleri ONAYLAMAK istiyor musunuz?')">
+                <i class="bi bi-check-all"></i> Seçilenleri Onayla
+            </button>
+            <button type="submit" name="decision" value="Reject" class="btn btn-danger btn-sm" onclick="return confirm('Seçilenleri REDDETMEK istiyor musunuz?')">
+                <i class="bi bi-x-circle"></i> Seçilenleri Reddet
+            </button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-warning">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 40px;" class="text-center">
+                            <input type="checkbox" id="selectAll" class="form-check-input" style="cursor:pointer;" />
+                        </th>
+                        <th>Talep Eden</th>
+                        <th>Tür</th>
+                        <th>Başlık</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @if (item.Status == WorkFlowBasic.Models.RequestStatus.Pending)
+                                {
+                                    <input type="checkbox" name="selectedIds" value="@item.Id" class="form-check-input row-checkbox" style="cursor:pointer;" />
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-secondary text-white rounded-circle d-flex justify-content-center align-items-center me-2" style="width:35px; height:35px; font-size:0.8rem;">
+                                        @item.Requester.FirstName.Substring(0, 1)@item.Requester.LastName.Substring(0, 1)
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">@item.Requester.FullName</div>
+                                        <small class="text-muted">@item.Requester.Department</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge bg-light text-dark border">@item.ProcessDefinition?.ProcessName</span></td>
+                            <td>@item.RequestTitle</td>
+                            <td>
+                                @if (item.Status == WorkFlowBasic.Models.RequestStatus.Pending)
+                                {
+                                    <span class="badge bg-warning text-dark">Bekliyor</span>
+                                }
+                                else if (item.Status == WorkFlowBasic.Models.RequestStatus.Approved)
+                                {
+
+                                    <span class="badge bg-success">Onaylandı</span>
+                                }
+                                else if (item.Status == WorkFlowBasic.Models.RequestStatus.Rejected)
+                                {
+
+                                    <span class="badge bg-danger">Red</span>
+                                }
+                            </td>
+                            <td>@item.CreatedDate.ToShortDateString()</td>
+                            <td>
+                                <a href="/Approvals/Details/@item.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> İncele
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-search display-4"></i><br />
+                                Kayıt bulunamadı.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('selectAll').addEventListener('change', function() {
+            var checkboxes = document.querySelectorAll('.row-checkbox');
+            for(var checkbox of checkboxes) {
+                checkbox.checked = this.checked;
+            }
+        });
+    </script>
+}

@@ -1,0 +1,136 @@
+﻿@model IEnumerable<WorkFlowBasic.Models.InventoryItem>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "Şirket Envanteri";
+}
+
+<<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>📦 Şirket Envanteri</h3>
+    <div>
+        <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#importModal">
+            <i class="bi bi-file-earmark-spreadsheet"></i> Excel'den Yükle
+        </button>
+
+        <a href="/Inventory/Create" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Yeni Eşya Ekle
+        </a>
+    </div>
+</div>
+
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Excel Dosyası Yükle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-action="ImportExcel" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        Lütfen şu formatta bir Excel dosyası yükleyin:<br />
+                        <strong>Sütun 1:</strong> Kategori (Bilgisayar, Telefon vb.)<br />
+                        <strong>Sütun 2:</strong> Ürün Adı (MacBook Pro)<br />
+                        <strong>Sütun 3:</strong> Seri No (S/N 12345)
+                    </p>
+                    <input type="file" name="excelFile" class="form-control" accept=".xlsx, .xls" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-success">Yüklemeyi Başlat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.ReturnRequests != null && ((List<WorkFlowBasic.Models.InventoryAssignment>)ViewBag.ReturnRequests).Any())
+{
+    <div class="card mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-exclamation-circle"></i> İade Bekleyen Eşyalar</h5>
+        </div>
+        <div class="card-body p-0">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Personel</th>
+                        <th>Eşya</th>
+                        <th>İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var req in (List<WorkFlowBasic.Models.InventoryAssignment>)ViewBag.ReturnRequests)
+                    {
+                        <tr>
+                            <td>@req.AssignedToUser?.FullName</td>
+                            <td>@req.InventoryItem?.ItemName</td>
+                            <td>
+                                <a href="/Inventory/ApproveReturn?assignmentId=@req.Id" class="btn btn-sm btn-success" onclick="return confirm('İadeyi onaylıyor musunuz? Eşya depoya dönecek.')">
+                                    <i class="bi bi-check-lg"></i> İade Al
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Kategori</th>
+                    <th>Eşya Adı</th>
+                    <th>Seri No</th>
+                    <th>Durum</th>
+                    <th class="text-end">İşlem</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td><span class="badge bg-secondary">@item.Category</span></td>
+                        <td>@item.ItemName</td>
+                        <td class="text-muted small">@item.SerialNumber</td>
+                        <td>
+                            @if (string.IsNullOrEmpty(item.CurrentOwnerId))
+                            {
+                                <span class="badge bg-success">Depoda</span>
+                            }
+                            else
+                            {
+                                var owner = await UserManager.FindByIdAsync(item.CurrentOwnerId);
+                                <span class="badge bg-warning text-dark"><i class="bi bi-person-fill"></i> @(owner?.FullName ?? "Bilinmiyor")</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a href="/Inventory/History/@item.Id" class="btn btn-sm btn-info me-1" title="Zimmet Geçmişi ve İmzalar">
+                                <i class="bi bi-clock-history"></i>
+                            </a>
+
+                            @if (string.IsNullOrEmpty(item.CurrentOwnerId))
+                            {
+                                <a href="/Inventory/Assign/@item.Id" class="btn btn-sm btn-outline-primary" title="Zimmetle">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                </a>
+                                <a href="/Inventory/Delete/@item.Id" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Bu eşyayı envanterden silmek istediğinize emin misiniz?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-light text-muted" disabled>Kullanımda</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
