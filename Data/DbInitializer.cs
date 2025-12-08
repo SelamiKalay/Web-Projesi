@@ -25,40 +25,40 @@ public static class DbInitializer
             }
         }
 
-        // 2. ADMİN: SELAMİ KALAY
-        var adminUser = await userManager.FindByEmailAsync("selami@sirket.com");
+        // 2. ADMİN: Admin
+        var adminUser = await userManager.FindByEmailAsync("admin@sirket.com");
         if (adminUser == null)
         {
             var newAdmin = new ApplicationUser
             {
-                UserName = "selami@sirket.com",
-                Email = "selami@sirket.com",
-                FirstName = "Selami",
-                LastName = "Kalay",
+                UserName = "admin@sirket.com",
+                Email = "admin@sirket.com",
+                FirstName = "Admin",
+                LastName = "Admin",
                 Department = "Yönetim Kurulu",
                 EmailConfirmed = true
             };
-            var result = await userManager.CreateAsync(newAdmin, "MMK16temmuz");
+            var result = await userManager.CreateAsync(newAdmin, "Admin123");
             if (result.Succeeded) await userManager.AddToRoleAsync(newAdmin, "Admin");
         }
 
-        // 3. MÜDÜR: MEHMET KAĞAN KALAY
-        var managerUser = await userManager.FindByEmailAsync("mehmet@sirket.com");
+        // 3. MÜDÜR: BOSS
+        var managerUser = await userManager.FindByEmailAsync("mudur@sirket.com");
         if (managerUser == null)
         {
-            var adminUserRef = await userManager.FindByEmailAsync("selami@sirket.com");
+            var adminUserRef = await userManager.FindByEmailAsync("admin@sirket.com");
 
             managerUser = new ApplicationUser
             {
-                UserName = "mehmet@sirket.com",
-                Email = "mehmet@sirket.com",
-                FirstName = "Mehmet Kağan",
-                LastName = "Kalay",
+                UserName = "mudur@sirket.com",
+                Email = "mudur@sirket.com",
+                FirstName = "Müdür",
+                LastName = "Müdür",
                 Department = "Genel Müdürlük",
                 ManagerId = adminUserRef?.Id,
                 EmailConfirmed = true
             };
-            await userManager.CreateAsync(managerUser, "161129");
+            await userManager.CreateAsync(managerUser, "Müdür123");
             await userManager.AddToRoleAsync(managerUser, "Manager");
         }
 
