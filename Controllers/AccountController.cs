@@ -115,11 +115,12 @@ public class AccountController : Controller
                 var ext = Path.GetExtension(model.CVFile.FileName);
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cvs");
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
-                using (var stream = new FileStream(Path.Combine(path, $"CV_{Guid.NewGuid()}{ext}"), FileMode.Create))
+                var fileName = $"CV_{Guid.NewGuid()}{ext}";
+                using (var stream = new FileStream(Path.Combine(path, fileName), FileMode.Create))
                 {
                     await model.CVFile.CopyToAsync(stream);
                 }
-                user.CVFilePath = $"/cvs/CV_{Guid.NewGuid()}{ext}";
+                user.CVFilePath = $"/cvs/{fileName}";
             }
 
             var manager = await _userManager.FindByEmailAsync("mehmet@sirket.com");

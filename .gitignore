@@ -8,3 +8,6 @@ wwwroot/signatures/
 appsettings.Development.json
 *.user
 *.suo
+.env
+wwwroot/cvs/
+Properties/PublishProfiles/
