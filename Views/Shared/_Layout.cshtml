@@ -316,11 +316,11 @@
 
         @if (TempData["Success"] != null)
         {
-            <text>Swal.fire({ title: 'Başarılı!', text: '@Html.Raw(TempData["Success"])', icon: 'success', confirmButtonText: 'Tamam', confirmButtonColor: '#0d6efd' });</text>
+            <text>Swal.fire({ title: 'Başarılı!', text: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Success"]?.ToString())), icon: 'success', confirmButtonText: 'Tamam', confirmButtonColor: '#0d6efd' });</text>
         }
         @if (TempData["Error"] != null)
         {
-            <text>Swal.fire({ title: 'Hata!', text: '@Html.Raw(TempData["Error"])', icon: 'error', confirmButtonText: 'Tamam', confirmButtonColor: '#dc3545' });</text>
+            <text>Swal.fire({ title: 'Hata!', text: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(TempData["Error"]?.ToString())), icon: 'error', confirmButtonText: 'Tamam', confirmButtonColor: '#dc3545' });</text>
         }
 
         function toggleChat() {

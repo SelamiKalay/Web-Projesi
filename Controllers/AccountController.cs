@@ -113,6 +113,11 @@ public class AccountController : Controller
             if (model.CVFile != null && model.CVFile.Length > 0)
             {
                 var ext = Path.GetExtension(model.CVFile.FileName);
+                if (!FileUploadHelper.IsAllowed(ext))
+                {
+                    ModelState.AddModelError("", FileUploadHelper.ErrorMessage);
+                    return View(model);
+                }
                 var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "cvs");
                 if (!Directory.Exists(path)) Directory.CreateDirectory(path);
                 var fileName = $"CV_{Guid.NewGuid()}{ext}";

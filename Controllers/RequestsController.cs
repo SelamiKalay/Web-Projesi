@@ -68,7 +68,11 @@ public class RequestsController : Controller
         if (ModelState.IsValid)
         {
             // DOSYA YÜKLEME
-            if (attachment != null && attachment.Length > 0)
+            if (attachment != null && attachment.Length > 0 && !FileUploadHelper.IsAllowed(Path.GetExtension(attachment.FileName)))
+            {
+                TempData["Error"] = FileUploadHelper.ErrorMessage;
+            }
+            else if (attachment != null && attachment.Length > 0)
             {
                 var extension = Path.GetExtension(attachment.FileName);
                 var newFileName = Guid.NewGuid().ToString() + extension;

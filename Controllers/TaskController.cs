@@ -79,7 +79,11 @@ public class TaskController : Controller
 
         if (ModelState.IsValid)
         {
-            if (taskFile != null && taskFile.Length > 0)
+            if (taskFile != null && taskFile.Length > 0 && !FileUploadHelper.IsAllowed(Path.GetExtension(taskFile.FileName)))
+            {
+                TempData["Error"] = FileUploadHelper.ErrorMessage;
+            }
+            else if (taskFile != null && taskFile.Length > 0)
             {
                 var extension = Path.GetExtension(taskFile.FileName);
                 var newFileName = $"Task_{Guid.NewGuid()}{extension}";
@@ -120,7 +124,11 @@ public class TaskController : Controller
 
         if (task != null && task.AssignedToId == user.Id && (task.Status == Models.TaskStatus.Assigned || task.Status == Models.TaskStatus.RevisionRequested))
         {
-            if (completionFile != null && completionFile.Length > 0)
+            if (completionFile != null && completionFile.Length > 0 && !FileUploadHelper.IsAllowed(Path.GetExtension(completionFile.FileName)))
+            {
+                TempData["Error"] = FileUploadHelper.ErrorMessage;
+            }
+            else if (completionFile != null && completionFile.Length > 0)
             {
                 var extension = Path.GetExtension(completionFile.FileName);
                 var newFileName = $"Complete_{task.Id}_{Guid.NewGuid()}{extension}";
