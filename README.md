@@ -1,5 +1,7 @@
 # WorkFlow — İş Akışı ve Onay Yönetim Sistemi
 
+> **English:** WorkFlow is an ASP.NET Core MVC web application for internal request/approval workflows, task and inventory management, with role-based access, real-time notifications (SignalR), a rule-based chatbot, e-mail notifications and a Swagger-documented REST API.
+
 ASP.NET Core MVC ile geliştirilmiş, şirket içi talep/onay süreçlerini, görevleri,
 envanteri ve personel yönetimini tek bir yerde toplayan web uygulaması.
 
