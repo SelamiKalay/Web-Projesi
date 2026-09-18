@@ -18,7 +18,6 @@ envanteri ve personel yönetimini tek bir yerde toplayan web uygulaması.
 - **E-posta bildirimleri** — SMTP
 - **Arka plan temizlik servisi** — eski kayıtların otomatik temizlenmesi
 - **REST API** — Swagger arayüzü ile belgelenmiş iş akışı uç noktaları
-- Türkçe / İngilizce arayüz desteği
 
 ## Teknolojiler
 
