@@ -1,63 +1,63 @@
-# WorkFlow — İş Akışı ve Onay Yönetim Sistemi
+# WorkFlow — Workflow and Approval Management System
 
-> **English:** WorkFlow is an ASP.NET Core MVC web application for internal request/approval workflows, task and inventory management, with role-based access, real-time notifications (SignalR), a rule-based chatbot, e-mail notifications and a Swagger-documented REST API.
+**English** | [Türkçe](README.tr.md)
 
-ASP.NET Core MVC ile geliştirilmiş, şirket içi talep/onay süreçlerini, görevleri,
-envanteri ve personel yönetimini tek bir yerde toplayan web uygulaması.
+A web application built with ASP.NET Core MVC that brings internal request/approval
+processes, tasks, inventory and staff management together in one place. The user
+interface is in Turkish.
 
-## Özellikler
+## Features
 
-- **Rol tabanlı yetkilendirme** — Admin, Yönetici (Manager) ve Personel rolleri
-  (ASP.NET Core Identity, Türkçe hata mesajları)
-- **Talep ve onay akışı** — talep oluşturma, yöneticiye onaya gönderme, onaylama /
-  reddetme / revizyon isteme, toplu onay, işlem geçmişi (log)
-- **Görev yönetimi** — görev atama ve takip, takvim görünümü
-- **Envanter yönetimi** — demirbaş kaydı, personele zimmetleme, zimmet geçmişi,
-  Excel'den toplu içe aktarma
-- **Personel kaydı** — CV yüklemeli kayıt, yönetici onayıyla hesap aktivasyonu
-- **Gerçek zamanlı bildirimler** — SignalR
-- **Sohbet botu** — sistem verileri üzerinden soruları yanıtlayan kural tabanlı asistan
-- **E-posta bildirimleri** — SMTP
-- **Arka plan temizlik servisi** — eski kayıtların otomatik temizlenmesi
-- **REST API** — Swagger arayüzü ile belgelenmiş iş akışı uç noktaları
+- **Role-based authorization** — Admin, Manager and Staff roles (ASP.NET Core
+  Identity, with Turkish error messages)
+- **Request and approval flow** — create a request, send it to a manager for
+  approval, approve / reject / request revision, bulk approval, action history (log)
+- **Task management** — task assignment and tracking, calendar view
+- **Inventory management** — asset registration, assigning items to staff,
+  assignment history, bulk import from Excel
+- **Staff registration** — sign-up with CV upload, account activation after manager approval
+- **Real-time notifications** — SignalR
+- **Chatbot** — a rule-based assistant that answers questions using system data
+- **E-mail notifications** — SMTP
+- **Background cleanup service** — automatic removal of old records
+- **REST API** — workflow endpoints documented with Swagger
 
-## Teknolojiler
+## Tech Stack
 
 ASP.NET Core (.NET 10) MVC · Entity Framework Core · SQL Server · ASP.NET Core
 Identity · SignalR · Swagger · Bootstrap · Docker
 
-## Çalıştırma
+## Running
 
-### Docker ile
+### With Docker
 
 ```bash
-cp .env.example .env      # SA_PASSWORD değerini düzenleyin
+cp .env.example .env      # set SA_PASSWORD
 docker compose up --build
 ```
 
-Uygulama `http://localhost:5000` adresinde açılır.
+The app opens at `http://localhost:5000`.
 
-### Yerelde
+### Locally
 
-`appsettings.json` içindeki bağlantı dizesi varsayılan olarak SQL Server LocalDB'yi
-kullanır.
+The connection string in `appsettings.json` uses SQL Server LocalDB by default.
 
 ```bash
 dotnet ef database update
 dotnet run
 ```
 
-E-posta gönderimi için `appsettings.json` içindeki `EmailSettings` bölümüne kendi
-SMTP bilgilerinizi girin (Gmail için uygulama şifresi kullanılmalıdır).
+To send e-mails, enter your own SMTP settings in the `EmailSettings` section of
+`appsettings.json` (use an app password for Gmail).
 
-## Proje Yapısı
+## Project Structure
 
 ```
-Controllers/   MVC ve API controller'ları
-Data/          DbContext ve başlangıç verisi (roller, varsayılan kullanıcılar)
-Hubs/          SignalR hub'ı
-Models/        Varlıklar ve ViewModel'ler
-Services/      E-posta, bildirim, sohbet botu, arka plan servisleri
-Views/         Razor görünümleri
-Migrations/    EF Core migration'ları
+Controllers/   MVC and API controllers
+Data/          DbContext and seed data (roles, default users)
+Hubs/          SignalR hub
+Models/        Entities and view models
+Services/      E-mail, notification, chatbot, background services
+Views/         Razor views
+Migrations/    EF Core migrations
 ```
